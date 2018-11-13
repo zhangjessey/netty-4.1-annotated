@@ -47,12 +47,21 @@ import java.util.Map;
  * <p>When not used in a {@link ServerBootstrap} context, the {@link #bind()} methods are useful for connectionless
  * transports such as datagram (UDP).</p>
  */
-public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C extends Channel> implements Cloneable {
 
+/**
+ * AbstractBootstrap是一个使得启动Channel更容易的助手类。它支持链式方法让配置AbstractBootstrap更轻松。
+ *
+ * 当不在ServerBootstrap环境中使用时，bind方法对无连接的传输比如UDP很有用。
+ *
+ */
+public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C extends Channel> implements Cloneable {
+    //处理事件
     volatile EventLoopGroup group;
     @SuppressWarnings("deprecation")
     private volatile ChannelFactory<? extends C> channelFactory;
+    //用于被绑定的本地地址
     private volatile SocketAddress localAddress;
+
     private final Map<ChannelOption<?>, Object> options = new LinkedHashMap<ChannelOption<?>, Object>();
     private final Map<AttributeKey<?>, Object> attrs = new LinkedHashMap<AttributeKey<?>, Object>();
     private volatile ChannelHandler handler;
@@ -78,10 +87,14 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
      * The {@link EventLoopGroup} which is used to handle all the events for the to-be-created
      * {@link Channel}
      */
+    /**
+     * EventLoopGroup用来处理所有将要被Channel创建的事件
+     */
     public B group(EventLoopGroup group) {
         if (group == null) {
             throw new NullPointerException("group");
         }
+        //只能设置一次
         if (this.group != null) {
             throw new IllegalStateException("group set already");
         }
@@ -98,6 +111,11 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
      * The {@link Class} which is used to create {@link Channel} instances from.
      * You either use this or {@link #channelFactory(io.netty.channel.ChannelFactory)} if your
      * {@link Channel} implementation has no no-args constructor.
+     */
+    /**
+     * channelClass是创建Channel实例的来源
+     * 如果你的Channel实现没有无参构造方法，你可以使用这个方法或者channelFactory
+     *
      */
     public B channel(Class<? extends C> channelClass) {
         if (channelClass == null) {
@@ -207,6 +225,9 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
      * Validate all the parameters. Sub-classes may override this, but should
      * call the super method in that case.
      */
+    /**
+     * 此处只判断了group、channelFactory不为空，并且返回本身
+     */
     public B validate() {
         if (group == null) {
             throw new IllegalStateException("group not set");
@@ -229,6 +250,10 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     /**
      * Create a new {@link Channel} and register it with an {@link EventLoop}.
      */
+    /**
+     * 校验
+     * 创建Channel并注册到EventLoop
+     */
     public ChannelFuture register() {
         validate();
         return initAndRegister();
@@ -236,6 +261,10 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
 
     /**
      * Create a new {@link Channel} and bind it.
+     */
+    /**
+     * 创建一个新的Channel并且绑定它
+     *
      */
     public ChannelFuture bind() {
         validate();
@@ -278,19 +307,29 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         return doBind(localAddress);
     }
 
+    /**
+     *
+     * 具体绑定逻辑
+     *
+     */
     private ChannelFuture doBind(final SocketAddress localAddress) {
         final ChannelFuture regFuture = initAndRegister();
+        //获取channel
         final Channel channel = regFuture.channel();
+        //没有异常
         if (regFuture.cause() != null) {
+            //返回
             return regFuture;
         }
-
+        //如果注册成功
         if (regFuture.isDone()) {
             // At this point we know that the registration was complete and successful.
             ChannelPromise promise = channel.newPromise();
             doBind0(regFuture, channel, localAddress, promise);
             return promise;
+         //如果注册失败
         } else {
+            //注册的future几乎肯定已经实现，但是以防万一没有。
             // Registration future is almost always fulfilled already, but just in case it's not.
             final PendingRegistrationPromise promise = new PendingRegistrationPromise(channel);
             regFuture.addListener(new ChannelFutureListener() {
@@ -300,12 +339,14 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
                     if (cause != null) {
                         // Registration on the EventLoop failed so fail the ChannelPromise directly to not cause an
                         // IllegalStateException once we try to access the EventLoop of the Channel.
+                        //在EventLoop上注册失败，我们就直接让ChannelPromise失败，为了避免我们试图访问Channel的EventLoop时引发IllegalStateException。
                         promise.setFailure(cause);
                     } else {
                         // Registration was successful, so set the correct executor to use.
                         // See https://github.com/netty/netty/issues/2586
+                        //注册成功，设置正确的executor来用。
                         promise.registered();
-
+                        //调用具体的绑定方法。
                         doBind0(regFuture, channel, localAddress, promise);
                     }
                 }
@@ -314,27 +355,40 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         }
     }
 
+    /**
+     * 创建并注册channel
+     *
+     */
     final ChannelFuture initAndRegister() {
         Channel channel = null;
         try {
+            //创建channel
             channel = channelFactory.newChannel();
+            //初始化channel
             init(channel);
         } catch (Throwable t) {
+            //channel有可能会为空，当newChannel方法崩溃的时候，比如说SocketException("too many open files")
             if (channel != null) {
                 // channel can be null if newChannel crashed (eg SocketException("too many open files"))
+                //强行关闭
                 channel.unsafe().closeForcibly();
                 // as the Channel is not registered yet we need to force the usage of the GlobalEventExecutor
                 return new DefaultChannelPromise(channel, GlobalEventExecutor.INSTANCE).setFailure(t);
             }
             // as the Channel is not registered yet we need to force the usage of the GlobalEventExecutor
+            //由于Channel还没有被注册，我们需要强行使用GlobalEventExecutor
             return new DefaultChannelPromise(new FailedChannel(), GlobalEventExecutor.INSTANCE).setFailure(t);
         }
-
+        //注册channel
         ChannelFuture regFuture = config().group().register(channel);
+        //如果异常
         if (regFuture.cause() != null) {
+            //且已注册
             if (channel.isRegistered()) {
+                //关闭channel
                 channel.close();
             } else {
+                //强行关闭channel
                 channel.unsafe().closeForcibly();
             }
         }
@@ -348,6 +402,15 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         //         because bind() or connect() will be executed *after* the scheduled registration task is executed
         //         because register(), bind(), and connect() are all bound to the same thread.
 
+
+        //如果执行到了这里并且promise没有失败，属于以下情况之一：
+        //1) 如果我们是在event loop中注册，到此处注册已经完成
+             //比如：现在可以安全地调用bind() 或 connect()方法，因为channel已经被注册
+        //2) 如果我们是在其他线程中注册，注册的request已经被成功加入到event loop的task queue以待之后执行。
+        //   比如：现在可以安全地调用bind() 或 connect()方法：
+        //        因为 bind() 或 connect()方法会在被调度的registration task之后执行
+        //        因为register(), bind(), connect()全部被绑定在同一线程。
+
         return regFuture;
     }
 
@@ -359,6 +422,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
 
         // This method is invoked before channelRegistered() is triggered.  Give user handlers a chance to set up
         // the pipeline in its channelRegistered() implementation.
+        //此方法在channelRegistered()触发之前调用。给用户的handlers机会在channelRegistered()的实现中去启动pipeline
         channel.eventLoop().execute(new Runnable() {
             @Override
             public void run() {
@@ -374,6 +438,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     /**
      * the {@link ChannelHandler} to use for serving the requests.
      */
+    //ChannelHandler用来为requests服务
     public B handler(ChannelHandler handler) {
         if (handler == null) {
             throw new NullPointerException("handler");
@@ -396,6 +461,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
      * Returns the {@link AbstractBootstrapConfig} object that can be used to obtain the current config
      * of the bootstrap.
      */
+    //返回AbstractBootstrapConfig对象来获取当前的bootstrap配置。
     public abstract AbstractBootstrapConfig<B, C> config();
 
     static <K, V> Map<K, V> copiedMap(Map<K, V> map) {
@@ -477,6 +543,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
 
         // Is set to the correct EventExecutor once the registration was successful. Otherwise it will
         // stay null and so the GlobalEventExecutor.INSTANCE will be used for notifications.
+        //只要注册成功会设置正确的EventExecutor。否则将会保持为null,GlobalEventExecutor.INSTANCE会被使用用作通知。
         private volatile boolean registered;
 
         PendingRegistrationPromise(Channel channel) {
@@ -490,12 +557,14 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         @Override
         protected EventExecutor executor() {
             if (registered) {
+                //如果已经注册，executor会被设置。
                 // If the registration was a success executor is set.
                 //
                 // See https://github.com/netty/netty/issues/2586
                 return super.executor();
             }
             // The registration failed so we can only use the GlobalEventExecutor as last resort to notify.
+            //注册失败我们就只能使用GlobalEventExecutor作为最后的通知手段。
             return GlobalEventExecutor.INSTANCE;
         }
     }
