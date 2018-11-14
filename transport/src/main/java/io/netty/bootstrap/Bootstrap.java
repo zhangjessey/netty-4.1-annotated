@@ -46,6 +46,10 @@ import java.util.Map.Entry;
  * <p>The {@link #bind()} methods are useful in combination with connectionless transports such as datagram (UDP).
  * For regular TCP connections, please use the provided {@link #connect()} methods.</p>
  */
+
+/**
+ * 使得客户端易于启动Channel
+ */
 public class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(Bootstrap.class);
@@ -162,20 +166,25 @@ public class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
     private ChannelFuture doResolveAndConnect(final SocketAddress remoteAddress, final SocketAddress localAddress) {
         final ChannelFuture regFuture = initAndRegister();
         final Channel channel = regFuture.channel();
-
+        //如果regFuture已经完成
         if (regFuture.isDone()) {
+            //如果失败
             if (!regFuture.isSuccess()) {
                 return regFuture;
             }
+            //如果成功
             return doResolveAndConnect0(channel, remoteAddress, localAddress, channel.newPromise());
         } else {
+            //基本确定执行此处Registration future已完成，这里只是以防万一
             // Registration future is almost always fulfilled already, but just in case it's not.
             final PendingRegistrationPromise promise = new PendingRegistrationPromise(channel);
+            //注册监听器
             regFuture.addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture future) throws Exception {
                     // Directly obtain the cause and do a null check so we only need one volatile read in case of a
                     // failure.
+                    //直接获取cause做判空处理，以防万一失败我们只做一次volatile read
                     Throwable cause = future.cause();
                     if (cause != null) {
                         // Registration on the EventLoop failed so fail the ChannelPromise directly to not cause an
@@ -201,28 +210,32 @@ public class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
 
             if (!resolver.isSupported(remoteAddress) || resolver.isResolved(remoteAddress)) {
                 // Resolver has no idea about what to do with the specified remote address or it's resolved already.
+                //Resolver不知道如何处理某一个具体的远程地址，或者地址已被解析过。
                 doConnect(remoteAddress, localAddress, promise);
                 return promise;
             }
 
             final Future<SocketAddress> resolveFuture = resolver.resolve(remoteAddress);
-
+            //如果解析完成
             if (resolveFuture.isDone()) {
                 final Throwable resolveFailureCause = resolveFuture.cause();
-
+                //解析失败
                 if (resolveFailureCause != null) {
                     // Failed to resolve immediately
                     channel.close();
                     promise.setFailure(resolveFailureCause);
                 } else {
                     // Succeeded to resolve immediately; cached? (or did a blocking lookup)
+                    //解析成功；被缓存？或者阻塞查找
                     doConnect(resolveFuture.getNow(), localAddress, promise);
                 }
                 return promise;
             }
 
             // Wait until the name resolution is finished.
+            //添加监听器
             resolveFuture.addListener(new FutureListener<SocketAddress>() {
+                //等待操作完成
                 @Override
                 public void operationComplete(Future<SocketAddress> future) throws Exception {
                     if (future.cause() != null) {
@@ -260,6 +273,11 @@ public class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
 
     @Override
     @SuppressWarnings("unchecked")
+    /**
+     * 父类init方法的具体实现
+     *
+     * 追加handler到ChannelPipeline，并将options以及attrs放进channel
+     */
     void init(Channel channel) throws Exception {
         ChannelPipeline p = channel.pipeline();
         p.addLast(config.handler());
@@ -278,6 +296,9 @@ public class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
     }
 
     @Override
+    /**
+     * 较父类增加handler的判空校验
+     */
     public Bootstrap validate() {
         super.validate();
         if (config.handler() == null) {
@@ -296,6 +317,11 @@ public class Bootstrap extends AbstractBootstrap<Bootstrap, Channel> {
      * Returns a deep clone of this bootstrap which has the identical configuration except that it uses
      * the given {@link EventLoopGroup}. This method is useful when making multiple {@link Channel}s with similar
      * settings.
+     */
+    /**
+     *
+     * 返回bootstrap的深度克隆，除了使用传入的EventLoopGroup其他配置完全一样。此方法用于创建多个配置相同的Channel。
+     *
      */
     public Bootstrap clone(EventLoopGroup group) {
         Bootstrap bs = new Bootstrap(this);

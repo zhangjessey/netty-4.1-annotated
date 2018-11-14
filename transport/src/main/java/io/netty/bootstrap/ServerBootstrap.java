@@ -40,6 +40,10 @@ import java.util.concurrent.TimeUnit;
  * {@link Bootstrap} sub-class which allows easy bootstrap of {@link ServerChannel}
  *
  */
+
+/**
+ * AbstractBootstrap子类使得ServerChannel易于启动
+ */
 public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerChannel> {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(ServerBootstrap.class);
@@ -241,16 +245,17 @@ public class ServerBootstrap extends AbstractBootstrap<ServerBootstrap, ServerCh
         @Override
         @SuppressWarnings("unchecked")
         public void channelRead(ChannelHandlerContext ctx, Object msg) {
+            //获取Channel
             final Channel child = (Channel) msg;
-
+            //添加childHandler
             child.pipeline().addLast(childHandler);
-
+            //设置ChannelOptions
             setChannelOptions(child, childOptions, logger);
-
+            //添加childAttrs
             for (Entry<AttributeKey<?>, Object> e: childAttrs) {
                 child.attr((AttributeKey<Object>) e.getKey()).set(e.getValue());
             }
-
+            //注意：此处把客户端连接的channel从bossGroup转移到childGroup
             try {
                 childGroup.register(child).addListener(new ChannelFutureListener() {
                     @Override
