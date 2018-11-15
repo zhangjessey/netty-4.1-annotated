@@ -27,6 +27,12 @@ import java.util.concurrent.TimeUnit;
  * life-cycle and allows shutting them down in a global fashion.
  *
  */
+
+/**
+ * 作用：调用next()方法提供EventExecutor，并管理它们的生命周期，允许全局关闭它们
+ *
+ * 注意：它继承了ScheduledExecutorService，可以定时调度创建线程
+ */
 public interface EventExecutorGroup extends ScheduledExecutorService, Iterable<EventExecutor> {
 
     /**
@@ -56,11 +62,21 @@ public interface EventExecutorGroup extends ScheduledExecutorService, Iterable<E
      *
      * @return the {@link #terminationFuture()}
      */
+    /**
+     * 发信号给executor告知调用者希望executor关闭。一旦此方法被调用，isShuttingDown方法会返回true,并且executor开始准备关闭自己。
+     * 与shutdown方法不同，这个所谓优雅关闭的方法确保the quiet period（通常大概几秒钟）内没有任务被提交在它关闭自己之前。如果有任务在
+     * the quiet period内被提交，它会被接收，并且重新开始计算quiet period。
+     *
+     */
     Future<?> shutdownGracefully(long quietPeriod, long timeout, TimeUnit unit);
 
     /**
      * Returns the {@link Future} which is notified when all {@link EventExecutor}s managed by this
      * {@link EventExecutorGroup} have been terminated.
+     */
+    /**
+     * 返回一个Future，当被这个EventExecutorGroup管理的所有EventExecutor都被关闭时，Future会得到通知
+     *
      */
     Future<?> terminationFuture();
 
@@ -80,6 +96,10 @@ public interface EventExecutorGroup extends ScheduledExecutorService, Iterable<E
 
     /**
      * Returns one of the {@link EventExecutor}s managed by this {@link EventExecutorGroup}.
+     */
+    /**
+     * 返回一个被EventExecutorGroup管理的EventExecutor
+     *
      */
     EventExecutor next();
 

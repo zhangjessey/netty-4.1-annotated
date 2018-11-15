@@ -22,16 +22,29 @@ package io.netty.util.concurrent;
  * way to access methods.
  *
  */
+
+/**
+ * EventExecutor是一个特殊的EventExecutorGroup，它提供了一些方便的方法来看一个线程是否被一个event loop执行。
+ * 除此之外，它也扩展了EventExecutorGroup，允许一种通用的方式来访问方法。
+ */
 public interface EventExecutor extends EventExecutorGroup {
 
     /**
      * Returns a reference to itself.
+     */
+    /**
+     * 返回它的引用本身
+     * 注意：此接口是一个特殊的EventExecutorGroup，没有聚合众多EventExecutor，所以返回本身
      */
     @Override
     EventExecutor next();
 
     /**
      * Return the {@link EventExecutorGroup} which is the parent of this {@link EventExecutor},
+     */
+    /**
+     * 返回其父类EventExecutorGroup
+     *
      */
     EventExecutorGroup parent();
 
