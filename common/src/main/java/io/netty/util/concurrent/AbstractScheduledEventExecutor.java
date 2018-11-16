@@ -28,6 +28,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * Abstract base class for {@link EventExecutor}s that want to support scheduling.
  */
+
+/**
+ * 抽象基类，想要支持定时任务的EventExecutor
+ */
 public abstract class AbstractScheduledEventExecutor extends AbstractEventExecutor {
 
     private static final Comparator<ScheduledFutureTask<?>> SCHEDULED_FUTURE_TASK_COMPARATOR =
@@ -37,7 +41,9 @@ public abstract class AbstractScheduledEventExecutor extends AbstractEventExecut
                     return o1.compareTo(o2);
                 }
             };
-
+    /**
+     * 暂存定时任务的优先级队列
+     */
     PriorityQueue<ScheduledFutureTask<?>> scheduledTaskQueue;
 
     protected AbstractScheduledEventExecutor() {
@@ -98,16 +104,23 @@ public abstract class AbstractScheduledEventExecutor extends AbstractEventExecut
      * Return the {@link Runnable} which is ready to be executed with the given {@code nanoTime}.
      * You should use {@link #nanoTime()} to retrieve the correct {@code nanoTime}.
      */
+    /**
+     * 返回一个在给定时间内准备好要执行的线程。
+     * 你应该使用nanoTime()方法来获取正确的nanoTime。
+     */
     protected final Runnable pollScheduledTask(long nanoTime) {
         assert inEventLoop();
 
         Queue<ScheduledFutureTask<?>> scheduledTaskQueue = this.scheduledTaskQueue;
+        //注意：peek方法取值且不删除
         ScheduledFutureTask<?> scheduledTask = scheduledTaskQueue == null ? null : scheduledTaskQueue.peek();
         if (scheduledTask == null) {
+            //无任务可取则返回空
             return null;
         }
-
+        //有任务可取且时间在给定时间内
         if (scheduledTask.deadlineNanos() <= nanoTime) {
+            //队列中删除此任务并返回
             scheduledTaskQueue.remove();
             return scheduledTask;
         }
@@ -116,6 +129,10 @@ public abstract class AbstractScheduledEventExecutor extends AbstractEventExecut
 
     /**
      * Return the nanoseconds when the next scheduled task is ready to be run or {@code -1} if no task is scheduled.
+     */
+    /**
+     * 返回下一个准备好要执行的定时任务的剩余时间，无任务返回-1
+     *
      */
     protected final long nextScheduledTaskNano() {
         Queue<ScheduledFutureTask<?>> scheduledTaskQueue = this.scheduledTaskQueue;
@@ -136,6 +153,9 @@ public abstract class AbstractScheduledEventExecutor extends AbstractEventExecut
 
     /**
      * Returns {@code true} if a scheduled task is ready for processing.
+     */
+    /**
+     * 返回是否有定时任务准备好执行
      */
     protected final boolean hasScheduledTasks() {
         Queue<ScheduledFutureTask<?>> scheduledTaskQueue = this.scheduledTaskQueue;
@@ -225,10 +245,16 @@ public abstract class AbstractScheduledEventExecutor extends AbstractEventExecut
         // NOOP
     }
 
+    /**
+     * 各种schedule方法均调用此方法，均封装入参为ScheduledFutureTask，并传入此方法
+     */
     <V> ScheduledFuture<V> schedule(final ScheduledFutureTask<V> task) {
+        //如果线程属于EventLoop
         if (inEventLoop()) {
+            //加入队列
             scheduledTaskQueue().add(task);
         } else {
+            //调用一个线程来使该任务入队
             execute(new Runnable() {
                 @Override
                 public void run() {

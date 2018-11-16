@@ -24,6 +24,12 @@ import io.netty.util.concurrent.OrderedEventExecutor;
  * implementation details and internals.
  *
  */
+
+/**
+ * 对于一个Channel被注册后，EventLoop将处理所有的I/O操作。
+ *
+ * 一个EventLoop通常将处理不止一个Channel，但是这依赖于实现细节和内部原理。
+ */
 public interface EventLoop extends OrderedEventExecutor, EventLoopGroup {
     @Override
     EventLoopGroup parent();

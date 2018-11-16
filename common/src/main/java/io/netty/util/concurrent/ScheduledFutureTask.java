@@ -123,8 +123,11 @@ final class ScheduledFutureTask<V> extends PromiseTask<V> implements ScheduledFu
         assert executor().inEventLoop();
         try {
             if (periodNanos == 0) {
+                //设置内部不能取消
                 if (setUncancellableInternal()) {
+                    //调用callable的call方法
                     V result = task.call();
+                    //设置返回结果
                     setSuccessInternal(result);
                 }
             } else {

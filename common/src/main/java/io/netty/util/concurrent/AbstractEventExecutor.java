@@ -30,6 +30,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * Abstract base class for {@link EventExecutor} implementations.
  */
+
+/**
+ * 抽象基类，EventExecutor的实现
+ */
 public abstract class AbstractEventExecutor extends AbstractExecutorService implements EventExecutor {
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(AbstractEventExecutor.class);
 
@@ -52,6 +56,9 @@ public abstract class AbstractEventExecutor extends AbstractExecutorService impl
         return parent;
     }
 
+    /**
+     * next返回自身
+     */
     @Override
     public EventExecutor next() {
         return this;
@@ -124,6 +131,10 @@ public abstract class AbstractEventExecutor extends AbstractExecutorService impl
         return (Future<T>) super.submit(task);
     }
 
+    /**
+     *
+     * 从父类的返回FutureTask变成返回netty的PromiseTask
+     */
     @Override
     protected final <T> RunnableFuture<T> newTaskFor(Runnable runnable, T value) {
         return new PromiseTask<T>(this, runnable, value);
@@ -134,6 +145,9 @@ public abstract class AbstractEventExecutor extends AbstractExecutorService impl
         return new PromiseTask<T>(this, callable);
     }
 
+    /**
+     * 不支持schedule方法，将由继承者AbstractScheduledEventExecutor来实现
+     */
     @Override
     public ScheduledFuture<?> schedule(Runnable command, long delay,
                                        TimeUnit unit) {

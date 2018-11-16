@@ -46,6 +46,9 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
  * Abstract base class for {@link OrderedEventExecutor}'s that execute all its submitted tasks in a single thread.
  *
  */
+/**
+ * 实现OrderedEventExecutor的抽象基类，在单个线程中执行所有提交的任务。
+ */
 public abstract class SingleThreadEventExecutor extends AbstractScheduledEventExecutor implements OrderedEventExecutor {
 
     static final int DEFAULT_MAX_PENDING_EXECUTOR_TASKS = Math.max(16,
