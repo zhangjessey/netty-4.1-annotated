@@ -62,13 +62,14 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
     private static final int ST_SHUTTING_DOWN = 3;
     private static final int ST_SHUTDOWN = 4;
     private static final int ST_TERMINATED = 5;
-
+    //特殊任务，用来标记WAKEUP
     private static final Runnable WAKEUP_TASK = new Runnable() {
         @Override
         public void run() {
             // Do nothing.
         }
     };
+    //特殊任务，用来标记NOOP
     private static final Runnable NOOP_TASK = new Runnable() {
         @Override
         public void run() {
@@ -183,6 +184,10 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
      * calls on the this {@link Queue} it may make sense to {@code @Override} this and return some more performant
      * implementation that does not support blocking operations at all.
      */
+    /**
+     * 创建一个队列保存任务来执行。默认实现会返回一个LinkedBlockingQueue，但是如果你的SingleThreadEventExecutor的子类不会做任何阻塞调用
+     * 在这个队列，重写它并且返回一些完全不支持阻塞操作的更好性能的实现是有意义的。
+     */
     protected Queue<Runnable> newTaskQueue(int maxPendingTasks) {
         return new LinkedBlockingQueue<Runnable>(maxPendingTasks);
     }
@@ -202,11 +207,18 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
     /**
      * @see Queue#poll()
      */
+    /**
+     * 拉取任务
+     */
     protected Runnable pollTask() {
         assert inEventLoop();
+        //注意：拉取目标是taskQueue
         return pollTaskFrom(taskQueue);
     }
 
+    /**
+     * 跳过WAKEUP_TASK类型任务，不断拉取任务
+     */
     protected static Runnable pollTaskFrom(Queue<Runnable> taskQueue) {
         for (;;) {
             Runnable task = taskQueue.poll();
@@ -226,31 +238,45 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
      *
      * @return {@code null} if the executor thread has been interrupted or waken up.
      */
+    /**
+     * 获取队列里的下一个任务，如果当前没有任务会被阻塞。
+     */
     protected Runnable takeTask() {
+        //断言当前线程在EventLoop中
         assert inEventLoop();
+        //taskQueue必须是BlockingQueue类型
         if (!(taskQueue instanceof BlockingQueue)) {
             throw new UnsupportedOperationException();
         }
 
         BlockingQueue<Runnable> taskQueue = (BlockingQueue<Runnable>) this.taskQueue;
+        //轮询
         for (;;) {
+            //从scheduledTaskQueue中peek任务，注意peek只获取不删除
             ScheduledFutureTask<?> scheduledTask = peekScheduledTask();
+            //如果scheduledTaskQueue没有的任务
             if (scheduledTask == null) {
                 Runnable task = null;
                 try {
+                    //从taskQueue中取任务
                     task = taskQueue.take();
+                    //跳过WAKEUP_TASK类别任务
                     if (task == WAKEUP_TASK) {
                         task = null;
                     }
                 } catch (InterruptedException e) {
                     // Ignore
                 }
+                //返回
                 return task;
             } else {
+                //如果scheduledTaskQueue有任务
                 long delayNanos = scheduledTask.delayNanos();
                 Runnable task = null;
+                //如果还没到执行时间
                 if (delayNanos > 0) {
                     try {
+                        //最多等待delayNanos，来从taskQueue获取任务
                         task = taskQueue.poll(delayNanos, TimeUnit.NANOSECONDS);
                     } catch (InterruptedException e) {
                         // Waken up.
@@ -262,10 +288,12 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
                     // scheduled tasks are never executed if there is always one task in the taskQueue.
                     // This is for example true for the read task of OIO Transport
                     // See https://github.com/netty/netty/issues/1614
+                    //从scheduledTaskQueue中取任务到taskQueue
                     fetchFromScheduledTaskQueue();
+                    //从taskQueue中取任务
                     task = taskQueue.poll();
                 }
-
+                //取到则返回，没取到则继续轮询
                 if (task != null) {
                     return task;
                 }
@@ -482,10 +510,15 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         // NOOP
     }
 
+    /**
+     * 唤醒
+     */
     protected void wakeup(boolean inEventLoop) {
+        //如果当前调用线程不在EventLoop中，或者在EventLoop当中但是state为ST_SHUTTING_DOWN
         if (!inEventLoop || state == ST_SHUTTING_DOWN) {
             // Use offer as we actually only need this to unblock the thread and if offer fails we do not care as there
             // is already something in the queue.
+            //使用offer方法是因为我们只需要通过它来解锁线程，如果因为queue中已经有了而offer失败也无所谓。
             taskQueue.offer(WAKEUP_TASK);
         }
     }
@@ -778,14 +811,19 @@ public abstract class SingleThreadEventExecutor extends AbstractScheduledEventEx
         }
 
         boolean inEventLoop = inEventLoop();
+        //如果当前调用线程在EventLoop中则添加任务到task queue
         addTask(task);
+        //否则
         if (!inEventLoop) {
+            //启动线程
             startThread();
+            //如果已经关闭并且从taskQueue移除
             if (isShutdown() && removeTask(task)) {
+                //抛出RejectedExecutionException异常
                 reject();
             }
         }
-
+        //如果addTaskWakesUp为false并且wakesUpForTask返回true,注意：wakesUpForTask方法默认返回true
         if (!addTaskWakesUp && wakesUpForTask(task)) {
             wakeup(inEventLoop);
         }

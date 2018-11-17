@@ -30,6 +30,10 @@ import java.util.concurrent.ThreadFactory;
  * Abstract base class for {@link EventLoop}s that execute all its submitted tasks in a single thread.
  *
  */
+
+/**
+ * 实现EventLoop的抽象基类，在单个线程中执行所有提交的任务。
+ */
 public abstract class SingleThreadEventLoop extends SingleThreadEventExecutor implements EventLoop {
 
     protected static final int DEFAULT_MAX_PENDING_TASKS = Math.max(16,
@@ -127,7 +131,7 @@ public abstract class SingleThreadEventLoop extends SingleThreadEventExecutor im
     final boolean removeAfterEventLoopIterationTask(Runnable task) {
         return tailTasks.remove(ObjectUtil.checkNotNull(task, "task"));
     }
-
+    //只有没有实现NonWakeupRunnable接口才会返回true,代表可以wakesUp
     @Override
     protected boolean wakesUpForTask(Runnable task) {
         return !(task instanceof NonWakeupRunnable);
@@ -150,6 +154,9 @@ public abstract class SingleThreadEventLoop extends SingleThreadEventExecutor im
 
     /**
      * Marker interface for {@link Runnable} that will not trigger an {@link #wakeup(boolean)} in all cases.
+     */
+    /**
+     * 标记接口，表示在所有情况下，不会触发wakeup
      */
     interface NonWakeupRunnable extends Runnable { }
 }
