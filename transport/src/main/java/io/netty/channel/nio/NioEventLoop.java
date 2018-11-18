@@ -266,9 +266,13 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         return provider;
     }
 
+    /**
+     * 创建一个MpscQueue，而非LinkedBlockingQueue
+     */
     @Override
     protected Queue<Runnable> newTaskQueue(int maxPendingTasks) {
         // This event loop never calls takeTask()
+        //这个event loop不会调用takeTask()
         return maxPendingTasks == Integer.MAX_VALUE ? PlatformDependent.<Runnable>newMpscQueue()
                                                     : PlatformDependent.<Runnable>newMpscQueue(maxPendingTasks);
     }
