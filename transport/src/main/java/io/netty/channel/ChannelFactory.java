@@ -18,6 +18,11 @@ package io.netty.channel;
 /**
  * Creates a new {@link Channel}.
  */
+
+/**
+ * 创建一个新的Channel对象。
+ * 为了兼容性，继承自老版本已过时ChannelFactory。
+ */
 @SuppressWarnings({ "ClassNameSameAsAncestorName", "deprecation" })
 public interface ChannelFactory<T extends Channel> extends io.netty.bootstrap.ChannelFactory<T> {
     /**

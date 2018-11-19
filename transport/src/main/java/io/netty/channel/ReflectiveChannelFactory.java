@@ -21,6 +21,14 @@ import io.netty.util.internal.StringUtil;
 /**
  * A {@link ChannelFactory} that instantiates a new {@link Channel} by invoking its default constructor reflectively.
  */
+
+/**
+ * 一个通过反射调用它的默认构造方法老实例化Channel对象的ChannelFactory。
+ *
+ * 使用示例：
+ * ServerBootstrap b = new ServerBootstrap();
+ * b.channel(NioServerSocketChannel.class);
+ */
 public class ReflectiveChannelFactory<T extends Channel> implements ChannelFactory<T> {
 
     private final Class<? extends T> clazz;
