@@ -79,10 +79,16 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
     /**
      * Returns the globally unique identifier of this {@link Channel}.
      */
+    /**
+     * ChannelId 全局唯一标识符
+     */
     ChannelId id();
 
     /**
      * Return the {@link EventLoop} this {@link Channel} was registered to.
+     */
+    /**
+     * 返回此channel注册到的EventLoop
      */
     EventLoop eventLoop();
 
@@ -92,30 +98,51 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
      * @return the parent channel.
      *         {@code null} if this channel does not have a parent channel.
      */
+    /**
+     * 返回父channel，没有则为空
+     */
     Channel parent();
 
     /**
      * Returns the configuration of this channel.
+     */
+    /**
+     * 返回channel的配置
+     *
      */
     ChannelConfig config();
 
     /**
      * Returns {@code true} if the {@link Channel} is open and may get active later
      */
+    /**
+     * Channel是open的则返回true,可能之后被激活
+     *
+     */
     boolean isOpen();
 
     /**
      * Returns {@code true} if the {@link Channel} is registered with an {@link EventLoop}.
+     */
+    /**
+     * 此Channel是否被注册到某一个EventLoop
      */
     boolean isRegistered();
 
     /**
      * Return {@code true} if the {@link Channel} is active and so connected.
      */
+    /**
+     * 如果Channel被激活可以连接返回true
+     *
+     */
     boolean isActive();
 
     /**
      * Return the {@link ChannelMetadata} of the {@link Channel} which describe the nature of the {@link Channel}.
+     */
+    /**
+     * 返回Channel的元数据
      */
     ChannelMetadata metadata();
 
@@ -127,6 +154,9 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
      *
      * @return the local address of this channel.
      *         {@code null} if this channel is not bound.
+     */
+    /**
+     * 返回Channel被绑定的本地地址
      */
     SocketAddress localAddress();
 
@@ -144,11 +174,17 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
      *         the origination of the received message as this method will
      *         return {@code null}.
      */
+    /**
+     * 返回此channel连接到的本地地址
+     */
     SocketAddress remoteAddress();
 
     /**
      * Returns the {@link ChannelFuture} which will be notified when this
      * channel is closed.  This method always returns the same future instance.
+     */
+    /**
+     * 返回此channel被关闭时将要被通知的ChannelFuture。此方法总是会返回同一个future实例。
      */
     ChannelFuture closeFuture();
 
@@ -158,11 +194,18 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
      * this method returns {@code false} are queued until the I/O thread is
      * ready to process the queued write requests.
      */
+    /**
+     * 当且仅当I/O线程马上要执行写操作时返回true。返回false时人任何写请求都会被排队直到I/O线程准备好处理排队的写请求。
+     */
     boolean isWritable();
 
     /**
      * Get how many bytes can be written until {@link #isWritable()} returns {@code false}.
      * This quantity will always be non-negative. If {@link #isWritable()} is {@code false} then 0.
+     */
+    /**
+     * 获取在isWritable方法返回false之前还可以写多少字节。
+     * 这个值总是非负数。如果isWritable方法返回false，则此方法返回0。
      */
     long bytesBeforeUnwritable();
 
@@ -170,20 +213,33 @@ public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparabl
      * Get how many bytes must be drained from underlying buffers until {@link #isWritable()} returns {@code true}.
      * This quantity will always be non-negative. If {@link #isWritable()} is {@code true} then 0.
      */
+    /**
+     * 获取多少字节必须被取走直到isWritable方法返回true。
+     * 这个值总是非负数。如果isWritable方法返回true，则此方法返回0。
+     */
     long bytesBeforeWritable();
 
     /**
      * Returns an <em>internal-use-only</em> object that provides unsafe operations.
+     */
+    /**
+     * 返回一个只在内部使用的对象，它提供一些不安全的操作。
      */
     Unsafe unsafe();
 
     /**
      * Return the assigned {@link ChannelPipeline}.
      */
+    /**
+     * 返回被分配的ChannelPipeline
+     */
     ChannelPipeline pipeline();
 
     /**
      * Return the assigned {@link ByteBufAllocator} which will be used to allocate {@link ByteBuf}s.
+     */
+    /**
+     * 返回被分配的ByteBufAllocator，它将被用来分配ByteBuf。
      */
     ByteBufAllocator alloc();
 

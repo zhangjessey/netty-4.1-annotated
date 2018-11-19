@@ -22,6 +22,11 @@ import io.netty.channel.socket.ServerSocketChannel;
  * its child {@link Channel}s by accepting them.  {@link ServerSocketChannel} is
  * a good example.
  */
+
+/**
+ * 标记接口，接收即将到来的连接尝试，接收它们时创建子Channel。
+ * ServerSocketChannel是一个很好的例子。
+ */
 public interface ServerChannel extends Channel {
     // This is a tag interface.
 }
