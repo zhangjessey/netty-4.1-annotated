@@ -175,10 +175,23 @@ import java.lang.annotation.Target;
  * what fundamental differences they have, how they flow in a  pipeline,  and how to handle
  * the operation in your application.
  */
+
+/**
+ * 处理、拦截I/O操作，并转发给所在ChannelPipeline内的下一个handler
+ *
+ * 注意：上述大段注释讲解了如何进行状态管理以及使用@Sharable注解。
+ *
+ * 大意为建议使用成员变量进行状态管理，但要在每一个channel（对应pipeline）创建一个新的handler实例
+ *
+ * 如果不想创建太多handler实例可以使用AttributeKeys。
+ */
 public interface ChannelHandler {
 
     /**
      * Gets called after the {@link ChannelHandler} was added to the actual context and it's ready to handle events.
+     */
+    /**
+     * 在ChannelHandler被添加到实际的context并且准备好处理事件之后被调用。
      */
     void handlerAdded(ChannelHandlerContext ctx) throws Exception;
 
@@ -186,12 +199,18 @@ public interface ChannelHandler {
      * Gets called after the {@link ChannelHandler} was removed from the actual context and it doesn't handle events
      * anymore.
      */
+    /**
+     * 在ChannelHandler被从实际的context删除并且不会再处理事件后被调用。
+     */
     void handlerRemoved(ChannelHandlerContext ctx) throws Exception;
 
     /**
      * Gets called if a {@link Throwable} was thrown.
      *
      * @deprecated is part of {@link ChannelInboundHandler}
+     */
+    /**
+     * 抛出异常后被调用
      */
     @Deprecated
     void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception;
@@ -207,6 +226,10 @@ public interface ChannelHandler {
      * <p>
      * This annotation is provided for documentation purpose, just like
      * <a href="http://www.javaconcurrencyinpractice.com/annotations/doc/">the JCIP annotations</a>.
+     */
+    /**
+     * 表明被此注解注释过的同一个ChannelHandler可以被一个或多个ChannelPipeline多次添加并且没有竞态条件
+     * 如果没有标记这个注解，你不得不每次添加到pipeline创建一个handler实例，因为这是不可分享状态，就像成员变量一样。
      */
     @Inherited
     @Documented
