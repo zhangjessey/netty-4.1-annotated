@@ -28,6 +28,10 @@ import java.net.SocketAddress;
 /**
  *  Combines a {@link ChannelInboundHandler} and a {@link ChannelOutboundHandler} into one {@link ChannelHandler}.
  */
+
+/**
+ * 结合ChannelInboundHandler和ChannelOutboundHandler成一个ChannelHandler
+ */
 public class CombinedChannelDuplexHandler<I extends ChannelInboundHandler, O extends ChannelOutboundHandler>
         extends ChannelDuplexHandler {
 

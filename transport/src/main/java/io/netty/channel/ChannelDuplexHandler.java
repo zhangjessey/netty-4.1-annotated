@@ -24,6 +24,12 @@ import java.net.SocketAddress;
  * It is a good starting point if your {@link ChannelHandler} implementation needs to intercept operations and also
  * state updates.
  */
+
+/**
+ * 这个ChannelHandler实现代表了ChannelInboundHandler和ChannelOutboundHandler的组合。
+ *
+ * 这是一个很好的起点，如果你的ChannelHandler实现需要拦截操作，也需要状态更新。
+ */
 public class ChannelDuplexHandler extends ChannelInboundHandlerAdapter implements ChannelOutboundHandler {
 
     /**

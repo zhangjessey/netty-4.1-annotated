@@ -29,6 +29,14 @@ package io.netty.channel;
  * releases the received messages automatically, please see {@link SimpleChannelInboundHandler}.
  * </p>
  */
+
+/**
+ * ChannelInboundHandler的抽象基类实现。
+ *
+ * 本实现仅仅是转发操作给ChannelPipeline中的下一个ChannelHandler。子类可能会重写方法实现改变这一点。
+ *
+ * 注意在channelRead方法自动返回之后消息并没有被发布。如果你想要一个ChannelInboundHandler的实现，自动发布接收到的消息，请查看SimpleChannelInboundHandler。
+ */
 public class ChannelInboundHandlerAdapter extends ChannelHandlerAdapter implements ChannelInboundHandler {
 
     /**

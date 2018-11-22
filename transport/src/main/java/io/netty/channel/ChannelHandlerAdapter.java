@@ -23,9 +23,14 @@ import java.util.Map;
 /**
  * Skeleton implementation of a {@link ChannelHandler}.
  */
+
+/**
+ * ChannelHandler的骨架实现
+ */
 public abstract class ChannelHandlerAdapter implements ChannelHandler {
 
     // Not using volatile because it's used only for a sanity check.
+    //注意：此处没有使用volatile，因为它只被用作合理性检查
     boolean added;
 
     /**
@@ -40,6 +45,9 @@ public abstract class ChannelHandlerAdapter implements ChannelHandler {
     /**
      * Return {@code true} if the implementation is {@link Sharable} and so can be added
      * to different {@link ChannelPipeline}s.
+     */
+    /**
+     * 如果使用Sharable注解则返回true,这样就可以被添加到不同的ChannelPipeline。
      */
     public boolean isSharable() {
         /**
