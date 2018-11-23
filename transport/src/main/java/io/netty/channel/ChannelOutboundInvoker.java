@@ -32,6 +32,11 @@ public interface ChannelOutboundInvoker {
      * called of the next {@link ChannelOutboundHandler} contained in the {@link ChannelPipeline} of the
      * {@link Channel}.
      */
+    /**
+     * 请求绑定到一个给到的SocketAddress并且通知ChannelFuture只要操作完成，要么因为操作成功，要么因为错误发生。
+     *
+     * 此方法会导致当前Channel的ChannelPipeline包含的下一个ChannelOutboundHandler的bind方法会被调用。
+     */
     ChannelFuture bind(SocketAddress localAddress);
 
     /**
@@ -46,6 +51,15 @@ public interface ChannelOutboundInvoker {
      * {@link ChannelOutboundHandler#connect(ChannelHandlerContext, SocketAddress, SocketAddress, ChannelPromise)}
      * method called of the next {@link ChannelOutboundHandler} contained in the {@link ChannelPipeline} of the
      * {@link Channel}.
+     */
+    /**
+     * 请求连接到一个已经给到的SocketAddress并且通知ChannelFuture一旦操作完成，要么因为操作成功，要么因为错误发生。
+     *
+     * 如果因为连接超时一个连接失败，ChannelFuture会失败并抛出一个ConnectTimeoutException。如果失败是因为连接拒绝，
+     * ConnectException会被使用。
+     *
+     * 此方法会导致当前Channel的ChannelPipeline包含的下一个ChannelOutboundHandler的connect方法会被调用。
+     *
      */
     ChannelFuture connect(SocketAddress remoteAddress);
 
