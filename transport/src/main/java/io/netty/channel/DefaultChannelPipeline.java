@@ -43,10 +43,14 @@ import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
  * The default {@link ChannelPipeline} implementation.  It is usually created
  * by a {@link Channel} implementation when the {@link Channel} is created.
  */
+
+/**
+ * ChannelPipeline的默认实现。它通常在Channel被创建的时候由一个Channel的具体实现来创建。
+ */
 public class DefaultChannelPipeline implements ChannelPipeline {
 
     static final InternalLogger logger = InternalLoggerFactory.getInstance(DefaultChannelPipeline.class);
-
+    //注意：各种属性大量使用final
     private static final String HEAD_NAME = generateName0(HeadContext.class);
     private static final String TAIL_NAME = generateName0(TailContext.class);
 
@@ -96,7 +100,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
 
         tail = new TailContext(this);
         head = new HeadContext(this);
-
+        //建立链表
         head.next = tail;
         tail.prev = head;
     }
