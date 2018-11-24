@@ -39,6 +39,7 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap
         implements ChannelHandlerContext, ResourceLeakHint {
 
     private static final InternalLogger logger = InternalLoggerFactory.getInstance(AbstractChannelHandlerContext.class);
+    //双向链表，前后节点使用volatile
     volatile AbstractChannelHandlerContext next;
     volatile AbstractChannelHandlerContext prev;
 
@@ -71,16 +72,19 @@ abstract class AbstractChannelHandlerContext extends DefaultAttributeMap
 
     // Will be set to null if no child executor should be used, otherwise it will be set to the
     // child executor.
+    //如果不需要用子executor将会被设置为null,否则被设置为子executor。
     final EventExecutor executor;
     private ChannelFuture succeededFuture;
 
     // Lazily instantiated tasks used to trigger events to a handler with different executor.
     // There is no need to make this volatile as at worse it will just create a few more instances then needed.
+    //懒实例化任务用于给具有不同executor的handler触发事件
+    //不需要让它volatile，因为更糟糕的情况只是创建一些需要的实例。
     private Runnable invokeChannelReadCompleteTask;
     private Runnable invokeReadTask;
     private Runnable invokeChannelWritableStateChangedTask;
     private Runnable invokeFlushTask;
-
+    //此状态使用volatile
     private volatile int handlerState = INIT;
 
     AbstractChannelHandlerContext(DefaultChannelPipeline pipeline, EventExecutor executor, String name,

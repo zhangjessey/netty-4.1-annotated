@@ -24,6 +24,7 @@ final class DefaultChannelHandlerContext extends AbstractChannelHandlerContext {
     DefaultChannelHandlerContext(
             DefaultChannelPipeline pipeline, EventExecutor executor, String name, ChannelHandler handler) {
         super(pipeline, executor, name, isInbound(handler), isOutbound(handler));
+        //handler不能为空
         if (handler == null) {
             throw new NullPointerException("handler");
         }
