@@ -83,21 +83,14 @@ import java.nio.charset.UnsupportedCharsetException;
  *
  * 可写的字节
  *
- * 这一段是需要被填充的未定义空间。
- * TODO
+ * 这一段是需要被填充的未定义空间。任何write开头的命令将会在当前writerIndex写数据并且
+ * 根据已写字节的数量增加它。如果写操作的参数也是ByteBuf，并且没有source index被指定，
+ * 指定buffer的readerIndex也会一起呗增加。
  *
- * This segment is a undefined space which needs to be filled.  Any operation
- * whose name starts with {@code write} will write the data at the current
- * {@link #writerIndex() writerIndex} and increase it by the number of written
- * bytes.  If the argument of the write operation is also a {@link ByteBuf},
- * and no source index is specified, the specified buffer's
- * {@link #readerIndex() readerIndex} is increased together.
  * <p>
- * If there's not enough writable bytes left, {@link IndexOutOfBoundsException}
- * is raised.  The default value of newly allocated buffer's
- * {@link #writerIndex() writerIndex} is {@code 0}.  The default value of
- * wrapped or copied buffer's {@link #writerIndex() writerIndex} is the
- * {@link #capacity() capacity} of the buffer.
+ * 如果没有足够的可写字节剩下, {@link IndexOutOfBoundsException}
+ * 会被抛出.  新分配的buffer的writerIndex的默认值是0。被包裹或拷贝的buffer的writerIndex的
+ * 默认值是buffer的capacity。
  *
  * <pre>
  * // Fills the writable bytes of a buffer with random integers.
@@ -107,13 +100,11 @@ import java.nio.charset.UnsupportedCharsetException;
  * }
  * </pre>
  *
- * <h4>Discardable bytes</h4>
+ * <h4>可抛弃的字节</h4>
  *
- * This segment contains the bytes which were read already by a read operation.
- * Initially, the size of this segment is {@code 0}, but its size increases up
- * to the {@link #writerIndex() writerIndex} as read operations are executed.
- * The read bytes can be discarded by calling {@link #discardReadBytes()} to
- * reclaim unused area as depicted by the following diagram:
+ * 这一部分包含的字节已经被读操作读取过。开始的时候，这部分的size是0，但是它随着读操作的
+ * 执行根据writerIndex增加。读取的字节可以被抛弃通过调用discardReadBytes来描述无用的
+ * 区域，如下图所示：
  *
  * <pre>
  *  BEFORE discardReadBytes()
@@ -134,18 +125,15 @@ import java.nio.charset.UnsupportedCharsetException;
  * readerIndex (0) <= writerIndex (decreased)        <=        capacity
  * </pre>
  *
- * Please note that there is no guarantee about the content of writable bytes
- * after calling {@link #discardReadBytes()}.  The writable bytes will not be
- * moved in most cases and could even be filled with completely different data
- * depending on the underlying buffer implementation.
+ * 请注意，在调用discardReadBytes之后无法保证可写字节们的内容。可写字节在多数情况下
+ * 不会被移走，并且甚至可以被完全不同的数据填充，这依赖于下面的buffer实现。
  *
- * <h4>Clearing the buffer indexes</h4>
  *
- * You can set both {@link #readerIndex() readerIndex} and
- * {@link #writerIndex() writerIndex} to {@code 0} by calling {@link #clear()}.
- * It does not clear the buffer content (e.g. filling with {@code 0}) but just
- * clears the two pointers.  Please also note that the semantic of this
- * operation is different from {@link ByteBuffer#clear()}.
+ * <h4>清空buffer索引</h4>
+ *
+ * 你可以通过调用clear方法同时把readerIndex，writerIndex设置为0。
+ * 这并不会清空缓存内容，只不过是清空了两个指针。请注意此操作的语义与
+ * ByteBuffer的clear不同。
  *
  * <pre>
  *  BEFORE clear()
