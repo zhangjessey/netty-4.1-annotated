@@ -154,25 +154,22 @@ import java.nio.charset.UnsupportedCharsetException;
  *      0 = readerIndex = writerIndex            <=            capacity
  * </pre>
  *
- * <h3>Search operations</h3>
+ * <h3>搜索操作</h3>
  *
- * For simple single-byte searches, use {@link #indexOf(int, int, byte)} and {@link #bytesBefore(int, int, byte)}.
- * {@link #bytesBefore(byte)} is especially useful when you deal with a {@code NUL}-terminated string.
- * For complicated searches, use {@link #forEachByte(int, int, ByteProcessor)} with a {@link ByteProcessor}
- * implementation.
+ * 对于简单的单字节搜索，使用indexOf(int, int, byte)和bytesBefore(int, int, byte)。
+ * bytesBefore(byte)特别有用，当你处理一个{@code NUL}-terminated的字符串。
+ * 对于复杂搜索，使用forEachByte(int, int, ByteProcessor)以及一个ByteProcessor实现。
  *
- * <h3>Mark and reset</h3>
+ * <h3>标记与重置</h3>
  *
- * There are two marker indexes in every buffer. One is for storing
- * {@link #readerIndex() readerIndex} and the other is for storing
- * {@link #writerIndex() writerIndex}.  You can always reposition one of the
- * two indexes by calling a reset method.  It works in a similar fashion to
- * the mark and reset methods in {@link InputStream} except that there's no
- * {@code readlimit}.
+ * 每个buffer有两个标记索引。一个存储readerIndex一个存储writerIndex。通过调用
+ * reset方法，你总能重置这两个索引之一。InputStream中的标记和重置方法也是类似，
+ * 除了没有readlimit。
  *
- * <h3>Derived buffers</h3>
+ * <h3>衍生的buffers</h3>
  *
- * You can create a view of an existing buffer by calling one of the following methods:
+ * 通过调用下列方法，你可以根据一个已经存在的buffer创建一个视图。
+ *
  * <ul>
  *   <li>{@link #duplicate()}</li>
  *   <li>{@link #slice()}</li>
@@ -190,7 +187,7 @@ import java.nio.charset.UnsupportedCharsetException;
  * In case a completely fresh copy of an existing buffer is required, please
  * call {@link #copy()} method instead.
  *
- * <h4>Non-retained and retained derived buffers</h4>
+ * <h4>非保留和保留的衍生的 buffers</h4>
  *
  * Note that the {@link #duplicate()}, {@link #slice()}, {@link #slice(int, int)} and {@link #readSlice(int)} does NOT
  * call {@link #retain()} on the returned derived buffer, and thus its reference count will NOT be increased. If you
@@ -198,7 +195,7 @@ import java.nio.charset.UnsupportedCharsetException;
  * {@link #retainedSlice()}, {@link #retainedSlice(int, int)} and {@link #readRetainedSlice(int)} which may return
  * a buffer implementation that produces less garbage.
  *
- * <h3>Conversion to existing JDK types</h3>
+ * <h3>转换成已存在的JDK类型</h3>
  *
  * <h4>Byte array</h4>
  *
