@@ -53,6 +53,8 @@ import java.util.Map;
  *
  * 当不在ServerBootstrap环境中使用时，bind方法对无连接的传输比如UDP很有用。
  *
+ * 注意：此处AbstractBootstrap的泛型定义有些特殊，可以参考：
+ * https://stackoverflow.com/questions/28426839/how-to-interpret-this-java-generic-type-definition
  */
 public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C extends Channel> implements Cloneable {
     //处理事件
