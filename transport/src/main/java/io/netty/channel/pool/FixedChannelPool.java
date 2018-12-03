@@ -37,6 +37,10 @@ import java.util.concurrent.TimeoutException;
  * {@link ChannelPool} implementation that takes another {@link ChannelPool} implementation and enforce a maximum
  * number of concurrent connections.
  */
+
+/**
+ * 此ChannelPool的实现需要另一个ChannelPool的实现，并且强制限定了最大并发连接数量。
+ */
 public class FixedChannelPool extends SimpleChannelPool {
     private static final IllegalStateException FULL_EXCEPTION = ThrowableUtil.unknownStackTrace(
             new IllegalStateException("Too many outstanding acquire operations"),

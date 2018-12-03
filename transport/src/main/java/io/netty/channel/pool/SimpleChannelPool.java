@@ -39,6 +39,12 @@ import static io.netty.util.internal.ObjectUtil.*;
  * This implementation uses LIFO order for {@link Channel}s in the {@link ChannelPool}.
  *
  */
+
+/**
+ * 简单的ChannelPool实现，如果某人需要一个Channel但是池里没有，会创建一个新的Channel。没有强制限定channel的最大并发数。
+ *
+ * 本实现使用ChannelPool里的Channel的后进先出顺序。
+ */
 public class SimpleChannelPool implements ChannelPool {
     private static final AttributeKey<SimpleChannelPool> POOL_KEY = AttributeKey.newInstance("channelPool");
     private static final IllegalStateException FULL_EXCEPTION = ThrowableUtil.unknownStackTrace(

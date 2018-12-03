@@ -24,6 +24,10 @@ import java.io.Closeable;
 /**
  * Allows to acquire and release {@link Channel} and so act as a pool of these.
  */
+
+/**
+ * 可以获取和释放Channel的池
+ */
 public interface ChannelPool extends Closeable {
 
     /**
