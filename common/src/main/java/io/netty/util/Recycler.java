@@ -367,6 +367,9 @@ public abstract class Recycler<T> {
             handle.stack = null;
             // we lazy set to ensure that setting stack to null appears before we unnull it in the owning thread;
             // this also means we guarantee visibility of an element in the queue if we see the index updated
+            //注意:此处使用了lazySet而不是set,具体可以参考:
+            //https://github.com/netty/netty/issues/8215
+            //http://ifeve.com/juc-atomic-class-lazyset-que/
             tail.lazySet(writeIndex + 1);
         }
 
