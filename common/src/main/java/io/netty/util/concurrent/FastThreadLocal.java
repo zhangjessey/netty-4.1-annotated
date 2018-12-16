@@ -41,6 +41,20 @@ import java.util.Set;
  * @param <V> the type of the thread-local variable
  * @see ThreadLocal
  */
+
+/**
+ * 一种ThreadLocal的特殊变体，字段具有更高的访问性能，当访问来自FastThreadLocalThread时。
+ *
+ * 内部实现上，一个FastThreadLocal使用数组内的常量索引，而不是使用hash code和hash table来寻找一个变量。尽管表面上
+ * 不易察觉，它产生轻微的性能优势相对于hash table，而且当访问频率高的时候很有用。
+ *
+ * 为了利用线程本地变量的优势，你的线程必须是FastThreadLocalThread线程或者它的子类。因此，默认情况，所有DefaultThreadFactory创建的
+ * 线程是FastThreadLocalThread。
+ *
+ * 注意，高速路径只能发生在继承自FastThreadLocalThread的线程，因为需要一个特殊的字段来存储有必要的状态。其他类型线程的访问回退到常规的ThreadLocal。
+ *
+ * @param <V> 线程本地变量的类型
+ */
 public class FastThreadLocal<V> {
 
     private static final int variablesToRemoveIndex = InternalThreadLocalMap.nextVariableIndex();
