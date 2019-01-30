@@ -76,6 +76,10 @@ import static io.netty.util.internal.StringUtil.simpleClassName;
  * timer facility'</a>.  More comprehensive slides are located
  * <a href="http://www.cse.wustl.edu/~cdgill/courses/cs6874/TimingWheels.ppt">here</a>.
  */
+
+/**
+ * 一个优化版的Timer,具有大致接近的I/O超时时间的调度。
+ */
 public class HashedWheelTimer implements Timer {
 
     static final InternalLogger logger =
